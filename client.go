@@ -45,7 +45,7 @@ func New(serverUri string) (*Client, error) {
 
 func (c Client) GetBitmark(txId string) ([]byte, error) {
 	u := *c.u
-	u.Path = fmt.Sprintf("/registry/v1/bitmarks/%s", txId)
+	u.Path = fmt.Sprintf("/v1/bitmarks/%s", txId)
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
 	resp, err := c.c.Do(req)
