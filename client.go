@@ -43,9 +43,9 @@ func New(serverUri string) (*Client, error) {
 	}, nil
 }
 
-func (c Client) GetBitmark(txId string) ([]byte, error) {
+func (c Client) GetTx(txId string) ([]byte, error) {
 	u := *c.u
-	u.Path = fmt.Sprintf("/v1/bitmarks/%s", txId)
+	u.Path = fmt.Sprintf("/v1/txs/%s", txId)
 
 	req, _ := http.NewRequest("GET", u.String(), nil)
 	resp, err := c.c.Do(req)
