@@ -11,9 +11,9 @@ import (
 	"time"
 )
 
-type Bitmark struct {
-	Bitmark json.RawMessage `json:"bitmark"`
-	Message string          `json:"message"`
+type Transaction struct {
+	Tx  json.RawMessage `json:"tx"`
+	Msg string          `json:"message"`
 }
 
 type Client struct {
@@ -55,20 +55,20 @@ func (c Client) GetTx(txId string) ([]byte, error) {
 	defer resp.Body.Close()
 
 	var buf bytes.Buffer
-	var bitmark Bitmark
+	var tx Transaction
 	_, err = io.Copy(&buf, resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("can not copy request body")
 	}
 
-	err = json.Unmarshal(buf.Bytes(), &bitmark)
+	err = json.Unmarshal(buf.Bytes(), &tx)
 	if err != nil {
 		return nil, fmt.Errorf("error when parsing request body: %s", buf.Bytes())
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf(bitmark.Message)
+		return nil, fmt.Errorf(tx.Msg)
 	}
 
-	return bitmark.Bitmark, nil
+	return tx.Tx, nil
 }
