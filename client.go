@@ -21,6 +21,11 @@ type Bitmark struct {
 	Msg     string          `json:"message"`
 }
 
+type Bitmarks struct {
+	Bitmarks json.RawMessage `json:"bitmarks"`
+	Msg      string          `json:"message"`
+}
+
 type Client struct {
 	u *url.URL
 	c *http.Client
@@ -76,6 +81,45 @@ func (c Client) GetTx(txId string) ([]byte, error) {
 	}
 
 	return tx.Tx, nil
+}
+
+func (c Client) GetBitmarkByOwner(owner string, pending, provenance bool) ([]byte, error) {
+	u := *c.u
+	u.Path = "/v1/bitmarks"
+	qs := url.Values{}
+	if pending {
+		qs.Set("pending", "true")
+	}
+	if provenance {
+		qs.Set("provenance", "true")
+	}
+	if owner != "" {
+		qs.Set("owner", owner)
+	}
+	u.RawQuery = qs.Encode()
+
+	req, _ := http.NewRequest("GET", u.String(), nil)
+	resp, err := c.c.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var buf bytes.Buffer
+	var bmk Bitmarks
+	_, err = io.Copy(&buf, resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("can not copy request body")
+	}
+
+	err = json.Unmarshal(buf.Bytes(), &bmk)
+	if err != nil {
+		return nil, fmt.Errorf("error when parsing request body: %s", buf.Bytes())
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf(bmk.Msg)
+	}
+	return bmk.Bitmarks, nil
 }
 
 func (c Client) GetBitmark(bitmarkId string, pending, provenance bool) ([]byte, error) {
